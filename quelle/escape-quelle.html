@@ -459,7 +459,7 @@ function buildTelescope(){
   const lens=new THREE.Mesh(new THREE.CircleGeometry(.17,32),new THREE.MeshStandardMaterial({color:0x223355,metalness:.9,roughness:.1,emissive:0x0a1a40}));lens.position.z=-1.3;lens.rotation.y=Math.PI;alt.add(lens);
   const ep=cyl(.04,.05,.22,brass(),0,.12,.82,alt,12);ep.rotation.x=-.5;
   const fs=new THREE.Mesh(new THREE.CylinderGeometry(.04,.04,.6,12),std(0x1d2238,{metalness:.5}));fs.rotation.x=Math.PI/2;fs.position.set(.16,.2,-.1);alt.add(fs);
-  new THREE.TextureLoader().load(LOGO_HA,t=>{t.colorSpace=THREE.SRGBColorSpace;const lg=new THREE.Mesh(new THREE.PlaneGeometry(.12,.112),new THREE.MeshBasicMaterial({map:t,transparent:true,opacity:.45,depthWrite:false}));lg.position.set(.175,0,.25);lg.rotation.y=Math.PI/2;lg.userData.noHit=true;alt.add(lg)});
+  new THREE.TextureLoader().load(LOGO_HA,t=>{t.colorSpace=THREE.SRGBColorSpace;const lg=new THREE.Mesh(new THREE.PlaneGeometry(.2,.187),new THREE.MeshBasicMaterial({map:t,color:0x4a4a4a,transparent:true,opacity:.65,depthWrite:false}));lg.position.set(.178,0,.3);lg.rotation.y=Math.PI/2;lg.userData.noHit=true;alt.add(lg);const lg2=lg.clone();lg2.position.x=-.178;lg2.rotation.y=-Math.PI/2;alt.add(lg2)});
   setTele(25,38);
   obstacles.push({x1:-1.15,x2:1.15,z1:-1.15,z2:1.15});
 }
