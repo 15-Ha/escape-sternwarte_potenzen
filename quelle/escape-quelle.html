@@ -8,8 +8,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Caveat:wght@600&family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0b0f1e;--panel:#141a30;--panel2:#1d2542;--line:#2f3a63;--text:#eef1fb;--muted:#9ea7c8;--acc:#f4c25b;--acc2:#7cc4ff;--ok:#4ade80;--bad:#f87171}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
-html,body{margin:0;height:100%;overflow:hidden;background:#000;color:var(--text);font-family:"Space Grotesk",system-ui,-apple-system,sans-serif;font-size:17px;line-height:1.45;overscroll-behavior:none}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
+html,body{margin:0;height:100%;width:100%;overflow:hidden;position:fixed;inset:0;-webkit-text-size-adjust:100%;text-size-adjust:100%;background:#000;color:var(--text);font-family:"Space Grotesk",system-ui,-apple-system,sans-serif;font-size:17px;line-height:1.45;overscroll-behavior:none}
 canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
 button{font:inherit;color:inherit;cursor:pointer;border:none}
 input{font:inherit;-webkit-user-select:text;user-select:text}
@@ -20,6 +20,7 @@ sup{font-size:.62em;line-height:0;position:relative;top:-.15em;margin-left:.04em
 .btn.danger{background:#3a1820;border-color:#7a2a36}
 .btn.small{padding:6px 12px;min-height:44px;min-width:44px;font-size:.95rem}
 .btn:disabled{opacity:.4}
+#ov,#hud,#toast,#help{touch-action:none}.panel,#start{touch-action:pan-y;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 #hud{position:fixed;top:0;left:0;right:0;z-index:10;display:none;gap:8px;align-items:center;padding:10px 12px;padding-top:max(10px,env(safe-area-inset-top));background:linear-gradient(rgba(0,0,0,.65),transparent);pointer-events:none;flex-wrap:wrap}
 #hud>*{pointer-events:auto}
 #hud .team{font-weight:700;text-shadow:0 1px 3px #000}
@@ -119,6 +120,7 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
 /* ======================= Hilfen ======================= */
 const $=s=>document.querySelector(s);
+const VW=()=>document.documentElement.clientWidth||window.innerWidth,VH=()=>document.documentElement.clientHeight||window.innerHeight;
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const mmss=s=>{const a=Math.abs(s);return(s<0?'-':'')+String(Math.floor(a/60)).padStart(2,'0')+':'+String(a%60).padStart(2,'0')};
 const isTouch=matchMedia('(pointer:coarse)').matches;
@@ -139,8 +141,8 @@ function genPuzzle(seed,level='grund'){
     shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(R()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
   const ERW=level==='erw',P={seed,level};
   const POOL=[];const add=(a,n)=>{if(!POOL.some(p=>p.a===a&&p.n===n))POOL.push({a,n,v:a**n})};
-  for(let a=2;a<=12;a++)add(a,2);for(let a=2;a<=6;a++)add(a,3);add(10,3);for(let n=4;n<=10;n++)add(2,n);add(3,4);add(3,5);add(4,4);add(5,4);add(10,4);
-  const TRAPS=[[2,3],[2,5],[3,4],[2,6],[3,5],[2,7],[2,9],[2,10],[2,8]];
+  for(let a=2;a<=12;a++)add(a,2);for(let a=2;a<=5;a++)add(a,3);add(10,3);for(let n=4;n<=8;n++)add(2,n);add(2,10);add(3,4);add(10,4);
+  const TRAPS=[[2,3],[2,5],[3,4],[2,6],[2,7],[2,10],[2,8]];
   const prodT=(a,n)=>Array(n).fill(a).join(' · '),wordT=(a,n)=>`${NUMW[a]} hoch ${NUMW[n]}`;
 
   /* ROT: Sternkarte – Sterne vom kleinsten zum grössten Wert verbinden */
@@ -181,12 +183,12 @@ function genPuzzle(seed,level='grund'){
   /* BLAU: Waage – gleichwertige Terme */
   const REP={};const rep=(v,s)=>{(REP[v]=REP[v]||[]).push(s)};
   POOL.filter(p=>p.v<=150).forEach(p=>{rep(p.v,`${p.a}^${p.n}`);if(p.n<=4)rep(p.v,'#P'+prodT(p.a,p.n));rep(p.v,'#W'+wordT(p.a,p.n))});
-  const GV=[4,8,9,16,25,27,32,36,49,64,81,100,121,125,144];
+  const GV=[4,8,9,16,25,27,32,36,49,64,81,100];
   const EX={1:['7^0','1^8','9^0'],12:['3 · 2^2'],18:['2 · 3^2'],20:['5 · 2^2'],24:['3 · 2^3'],36:['(2 · 3)^2'],40:['5 · 2^3'],48:['3 · 4^2'],50:['2 · 5^2'],54:['2 · 3^3'],13:['5 + 2^3'],100:['(2 · 5)^2'],17:['1 + 2^4'],28:['1 + 3^3']};
-  for(;;){const nW=5,nU=ERW?ri(2,3):3;
+  for(;;){const nW=5,nU=ERW?ri(2,3):2;
     let vals;if(ERW){const ev=shuffle(Object.keys(EX).map(Number)).slice(0,2);vals=[...ev,...shuffle(GV.filter(v=>!ev.includes(v))).slice(0,nW-ev.length)]}else vals=shuffle(GV).slice(0,nW);
     vals=shuffle(vals);if(new Set(vals).size!==nW)continue;
-    const used=shuffle([...Array(nW).keys()]).slice(0,nU).sort((a,b)=>a-b),T=used.reduce((a,i)=>a+vals[i],0);if(T>260||T<40)continue;
+    const used=shuffle([...Array(nW).keys()]).slice(0,nU).sort((a,b)=>a-b),T=used.reduce((a,i)=>a+vals[i],0);if(T>200||T<30)continue;
     let cnt=0;for(let m=1;m<(1<<nW);m++){let s=0;for(let i=0;i<nW;i++)if(m>>i&1)s+=vals[i];if(s===T)cnt++}if(cnt!==1)continue;
     const ws=vals.map(v=>{let o=[];if(ERW&&EX[v])o=EX[v].slice();if(!o.length||R()<.25)o=o.concat(REP[v]||[String(v)]);let s=pick(o);return{v,t:s.replace(/^#[PW]/,''),k:s.startsWith('#P')?'prod':s.startsWith('#W')?'word':'x'}});
     if(!ws.some(w=>w.k!=='x')){const c=ws.find(w=>(REP[w.v]||[]).some(s=>s.startsWith('#W')));if(c){c.t=REP[c.v].find(s=>s.startsWith('#W')).slice(2);c.k='word'}}
@@ -194,24 +196,24 @@ function genPuzzle(seed,level='grund'){
     const tp=POOL.find(p=>p.v===T);P.wts=ws;P.T=T;P.TT=tp&&R()<.5?`${tp.a}^${tp.n}`:String(T);P.used=used;P.blue=ri(2,9);break}
 
   /* GELB: Kofferschloss (Zählprinzip) -> Tablet; Poster Sternenbaum (Exponent finden) */
-  const KN=[[3,3],[3,4],[4,3],[5,3],[2,5],[2,6],[4,4],[10,3],[6,3],[2,4]];
+  const KN=[[3,3],[3,4],[4,3],[5,3],[2,5],[2,6],[10,3],[2,4],[10,2]];
   if(!ERW){const[k,n]=pick(KN);P.lock={w:Array.from({length:n},()=>({k})),pin:k**n,kind:'pow',k,n}}
   else if(R()<.5){const[k,n]=pick(KN.filter(x=>x[1]<=4));const w=Array.from({length:n},()=>({k}));w.splice(ri(0,n),0,{k,stuck:true});P.lock={w,pin:k**n,kind:'stuck',k,n}}
-  else{for(;;){const c=[pick([2,3,4,5,6,10]),pick([2,3,4,5,6,10]),pick([2,3,4,5,6,10])];if(new Set(c).size<2)continue;const pr=c[0]*c[1]*c[2];if(pr<30||pr>400)continue;P.lock={w:c.map(k=>({k})),pin:pr,kind:'mix'};break}}
+  else{for(;;){const c=[pick([2,3,4,5,6,10]),pick([2,3,4,5,6,10]),pick([2,3,4,5,6,10])];if(new Set(c).size<2)continue;const pr=c[0]*c[1]*c[2];if(pr<24||pr>200)continue;P.lock={w:c.map(k=>({k})),pin:pr,kind:'mix'};break}}
   P.lock.sym=P.lock.w.map(w=>w.k===10?['0','1','2','3','4','5','6','7','8','9']:shuffle(SYMB).slice(0,w.k));
-  P.treeB=ERW?pick([3,4,5]):pick([2,2,3]);P.yellow=P.treeB===2?ri(3,9):P.treeB===3?ri(3,5):ri(3,4);P.treeX=P.treeB**P.yellow;
+  P.treeB=ERW?pick([3,4,5]):pick([2,2,3]);P.yellow=P.treeB===2?ri(3,8):P.treeB===5?3:ri(3,4);P.treeX=P.treeB**P.yellow;
 
   /* GRÜN: Schaltpult – Behauptungen «stimmt / stimmt nicht» */
   const names=shuffle(['Lea','Noah','Mia','Jan','Sara','Tim','Elif','Luca','Nina','Ben']);
   const TY={
-    A:()=>{let a,n;do{a=ri(2,6);n=ri(2,4)}while(a**n===a*n);return R()<.55?{s:`${a}^${n} = ${a*n}`,ok:false}:{s:`${a}^${n} = ${fmtN(a**n)}`,ok:true}},
+    A:()=>{let a,n;do{a=ri(2,6);n=ri(2,4)}while(a**n===a*n||a**n>125);return R()<.55?{s:`${a}^${n} = ${a*n}`,ok:false}:{s:`${a}^${n} = ${fmtN(a**n)}`,ok:true}},
     B:()=>{const[a,n]=pick(TRAPS.slice(0,7));const sw=R()<.5;const[x,y]=sw?[n,a]:[a,n];return{s:`${x}^${y} ist grösser als ${y}^${x}`,ok:x**y>y**x}},
     C:()=>{const a=ri(3,9);return R()<.55?{s:`${a}^2 = ${a} + ${a}`,ok:false}:{s:`${a}^2 = ${a} · ${a}`,ok:true}},
     D:()=>{const n=ri(3,9);return R()<.55?{s:`1^${n} = ${n}`,ok:false}:{s:`1^${n} = 1`,ok:true}},
     E:()=>{const n=ri(2,6);return R()<.6?{s:`0^${n} = 0`,ok:true}:{s:`0^${n} = ${n}`,ok:false}},
     F:()=>{const e=ri(3,7),d=R()<.5?0:pick([-1,1]);return{s:`10^${e} = ${fmtN(10**(e+d))}`,ok:d===0}},
     G:()=>{let a,n;do{a=ri(2,9);n=ri(2,6)}while(a===n);const v=ri(0,2);return v===0?{s:`In ${a}^${n} ist ${a} die Basis.`,ok:true}:v===1?{s:`In ${a}^${n} ist ${n} die Basis.`,ok:false}:{s:`In ${a}^${n} ist ${a} der Exponent.`,ok:false}},
-    H:()=>{const[a,n]=pick(TRAPS.slice(0,6));return{s:`${a}^${n} = ${n}^${a}`,ok:false}},
+    H:()=>{const[a,n]=pick(TRAPS.slice(0,5));return{s:`${a}^${n} = ${n}^${a}`,ok:false}},
     I:()=>{const a=ri(2,12);return R()<.55?{s:`${a}^0 = 0`,ok:false}:{s:`${a}^0 = 1`,ok:true}},
     J:()=>{const k=ri(2,3),a=ri(2,4),v=ri(0,3);
       if(v===0)return{s:`${k} · ${a}^2 = ${(k*a)**2}`,ok:false};if(v===1)return{s:`${k} · ${a}^2 = ${k*a*a}`,ok:true};
@@ -223,9 +225,9 @@ function genPuzzle(seed,level='grund'){
   P.green=ri(2,9);
 
   /* VIOLETT: Teleskop ausrichten, dann Term berechnen */
-  if(!ERW){const AZ=[[2,6],[2,7],[2,8],[3,4],[3,5],[5,3],[6,3],[7,2],[11,2],[12,2],[10,2]],AL=[[2,4],[3,3],[2,5],[5,2],[6,2],[7,2],[4,3],[8,2],[9,2]];
+  if(!ERW){const AZ=[[2,6],[2,7],[2,8],[3,4],[5,3],[7,2],[11,2],[12,2],[10,2],[9,2]],AL=[[2,4],[3,3],[2,5],[5,2],[6,2],[7,2],[4,3],[8,2],[9,2]];
     const az=pick(AZ),al=pick(AL);P.az=az[0]**az[1];P.azT=`${az[0]}^${az[1]}`;P.alt=al[0]**al[1];P.altT=`${al[0]}^${al[1]}`}
-  else{const small=POOL.filter(p=>p.v<=250&&p.v>=4);
+  else{const small=POOL.filter(p=>p.v<=125&&p.v>=4);
     for(;;){const a=pick(small),b=pick(small);if(a.v===b.v)continue;const plus=R()<.6;const v=plus?a.v+b.v:a.v-b.v;if(v<20||v>355)continue;P.az=v;P.azT=`${a.a}^${a.n} ${plus?'+':'−'} ${b.a}^${b.n}`;break}
     for(;;){if(R()<.3){const k=ri(2,3),a=ri(2,4),v=(k*a)**2;if(v>85)continue;P.alt=v;P.altT=`(${k} · ${a})^2`;break}
       const a=pick(small),b=pick(small);if(a.v<=b.v)continue;const v=a.v-b.v;if(v<10||v>85)continue;P.alt=v;P.altT=`${a.a}^${a.n} − ${b.a}^${b.n}`;break}}
@@ -246,7 +248,7 @@ function genPuzzle(seed,level='grund'){
 
   /* ORANGE: Exponat aus Würfelchen zählen -> Kiste */
   if(R()<.5){const L=ERW?pick([4,5]):pick([3,4]);P.exh={kind:'pyr',L};P.count=L*(L+1)*(2*L+1)/6}
-  else{const C=ERW?[[4,2],[5,2],[5,3],[6,2]]:[[3,1],[4,1],[4,2],[5,1],[5,2]];const[n,k]=pick(C);P.exh={kind:'cube',n,k};P.count=n**3-k**3}
+  else{const C=ERW?[[4,2],[5,2],[5,3],[4,3]]:[[3,1],[4,1],[4,2],[5,1],[5,2]];const[n,k]=pick(C);P.exh={kind:'cube',n,k};P.count=n**3-k**3}
   P.crateStart=[ri(0,9),ri(0,9),ri(0,9)];P.orange=ri(2,9);
 
   P.order=shuffle(['rot','gelb','grün','blau','violett','orange']);
@@ -358,17 +360,29 @@ const sfx={ok:()=>[523,659,784,1046].forEach((f,i)=>tone(f,.35,'triangle',.12,i*
 /* ======================= Three.js Grundgerüst ======================= */
 const canvas=$('#c');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
-renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setSize(VW(),VH(),false);
 renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.1;
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x05070f);scene.fog=new THREE.Fog(0x070a16,11,24);
-const camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,.05,80);camera.rotation.order='YXZ';
+const camera=new THREE.PerspectiveCamera(70,VW()/VH(),.05,80);camera.rotation.order='YXZ';
 let composer=null;
-function setupQuality(high){renderer.setPixelRatio(high?Math.min(devicePixelRatio,1.5):1);renderer.setSize(innerWidth,innerHeight);
-  if(high){const pr=renderer.getPixelRatio();composer=new EffectComposer(renderer,new THREE.WebGLRenderTarget(innerWidth*pr,innerHeight*pr,{type:THREE.HalfFloatType,samples:4}));composer.addPass(new RenderPass(scene,camera));composer.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.55,.45,.9));composer.addPass(new OutputPass());composer.setSize(innerWidth,innerHeight)}
+function setupQuality(high){renderer.setPixelRatio(high?Math.min(devicePixelRatio,1.5):1);renderer.setSize(VW(),VH(),false);
+  if(high){const pr=renderer.getPixelRatio();composer=new EffectComposer(renderer,new THREE.WebGLRenderTarget(VW()*pr,VH()*pr,{type:THREE.HalfFloatType,samples:4}));composer.addPass(new RenderPass(scene,camera));composer.addPass(new UnrealBloomPass(new THREE.Vector2(VW(),VH()),.55,.45,.9));composer.addPass(new OutputPass());composer.setSize(VW(),VH())}
   else composer=null}
-function fitCam(){const a=innerWidth/innerHeight;camera.aspect=a;const h=78*Math.PI/180;camera.fov=Math.min(92,Math.max(68,2*Math.atan(Math.tan(h/2)/a)*180/Math.PI));camera.updateProjectionMatrix()}
+function fitCam(){const a=VW()/VH();camera.aspect=a;const h=78*Math.PI/180;camera.fov=Math.min(92,Math.max(68,2*Math.atan(Math.tan(h/2)/a)*180/Math.PI));camera.updateProjectionMatrix()}
 fitCam();
-addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight);composer&&composer.setSize(innerWidth,innerHeight);fitCam()});
+let lastW=0,lastH=0;
+function onResize(){const ae=document.activeElement;if(ae&&(ae.tagName==='INPUT'))return; // Bildschirmtastatur offen: nichts verändern
+  window.scrollTo(0,0);const w=VW(),h=VH();if(w===lastW&&h===lastH)return;lastW=w;lastH=h;renderer.setSize(w,h,false);composer&&composer.setSize(w,h);fitCam()}
+addEventListener('resize',onResize);addEventListener('orientationchange',()=>setTimeout(onResize,350));
+if(window.visualViewport)visualViewport.addEventListener('resize',()=>{if(visualViewport.scale&&Math.abs(visualViewport.scale-1)<.01)onResize()});
+/* iPad: kein Zoomen, kein Verschieben der Seite */
+['gesturestart','gesturechange','gestureend'].forEach(ev=>document.addEventListener(ev,e=>e.preventDefault(),{passive:false}));
+document.addEventListener('touchmove',e=>{if(e.touches.length>1||(e.scale!==undefined&&e.scale!==1)){e.preventDefault();return}
+  if(!e.target.closest||!e.target.closest('.panel,#start'))e.preventDefault()},{passive:false});
+let lastTouchEnd=0;document.addEventListener('touchend',e=>{const n=Date.now();if(n-lastTouchEnd<320&&!(e.target.closest&&e.target.closest('button,select,input,[data-s]')))e.preventDefault();lastTouchEnd=n},{passive:false});
+document.addEventListener('dblclick',e=>e.preventDefault());document.addEventListener('contextmenu',e=>e.preventDefault());
+document.addEventListener('focusout',()=>setTimeout(()=>{window.scrollTo(0,0);document.body.scrollTop=0;onResize()},120));
+addEventListener('scroll',()=>{if(window.scrollX||window.scrollY)window.scrollTo(0,0)});
 
 const W=6,D=5,H=3.2,DR=4.8,DH=3.4,SLIT=.3;
 const obstacles=[];const anim={};
@@ -757,7 +771,7 @@ const keys={};const joy={x:0,y:0};const pointers=new Map();
 let uiOpen=true;
 addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;if(e.key==='Escape'&&uiOpen&&S&&$('#ov').style.display==='flex')closePanel()});addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false});
 canvas.addEventListener('pointerdown',e=>{if(uiOpen)return;canvas.setPointerCapture(e.pointerId);
-  const type=e.pointerType!=='mouse'&&e.clientX<innerWidth*.4?'move':'look';
+  const type=e.pointerType!=='mouse'&&e.clientX<VW()*.4?'move':'look';
   pointers.set(e.pointerId,{x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,t:performance.now(),type,moved:false});
   if(type==='move'){const j=$('#joy');j.style.left=e.clientX+'px';j.style.top=e.clientY+'px';j.style.display='block'}});
 canvas.addEventListener('pointermove',e=>{const p=pointers.get(e.pointerId);if(!p)return;
@@ -775,7 +789,7 @@ function collide(p){const r=.32;p.x=Math.max(-W+r+.05,Math.min(W-r-.05,p.x));p.z
 const ray=new THREE.Raycaster();
 function idOf(o){while(o){if(o.userData&&o.userData.id)return o.userData.id;o=o.parent}return null}
 const hitOK=h=>h.object.visible&&!h.object.isPoints&&!h.object.userData.noHit&&h.object.type!=='LineSegments'&&h.object.type!=='Line';
-function pickAt(cx,cy){ray.setFromCamera(new THREE.Vector2(cx/innerWidth*2-1,-(cy/innerHeight)*2+1),camera);const hit=ray.intersectObjects(scene.children,true).find(hitOK);if(!hit)return null;const id=idOf(hit.object);return id?{id,d:hit.distance}:null}
+function pickAt(cx,cy){ray.setFromCamera(new THREE.Vector2(cx/VW()*2-1,-(cy/VH())*2+1),camera);const hit=ray.intersectObjects(scene.children,true).find(hitOK);if(!hit)return null;const id=idOf(hit.object);return id?{id,d:hit.distance}:null}
 function interactAt(cx,cy){if(uiOpen||!S||S.end)return;
   let h=pickAt(cx,cy);
   if(!h){const r=isTouch?26:12;for(const[dx,dy]of[[0,-1],[1,0],[0,1],[-1,0],[.7,-.7],[.7,.7],[-.7,.7],[-.7,-.7]]){const c=pickAt(cx+dx*r,cy+dy*r);if(c&&(!h||c.d<h.d))h=c}}
@@ -1020,9 +1034,9 @@ function startScreen(){
   <div class="card"><p>Ihr seid in der Sternwarte der Astronomin Dr. Vera Hoch eingeschlossen. Sucht den Raum ab, findet versteckte Hinweise und knackt den Code der Ausgangstür. <b>Nichts liegt offen herum.</b></p><p class="muted" style="font-size:.9rem">🧠 Alle Rätsel lassen sich im Kopf lösen – ihr braucht keinen Taschenrechner.</p>
    <div class="form"><label>Teamname<input id="f-team" maxlength="30" placeholder="z. B. Die Hochstapler"></label>
     <div class="row"><label>Zeitlimit<select id="f-limit"><option value="0">ohne (Stoppuhr)</option>${[30,35,40,45,50,55,60,65,70,75,80].map(m=>`<option value="${m}"${m===40?' selected':''}>${m} Minuten</option>`).join('')}</select></label>
-    <label>Strafe pro Tipp<select id="f-pen"><option value="0">keine</option>${[1,2,3,4,5,6,7,8,9,10].map(m=>`<option value="${m*60}"${m===3?' selected':''}>+${m} Minute${m>1?'n':''}</option>`).join('')}</select></label>
-    <label>Strafe pro falscher Eingabe<select id="f-wpen">${[30,60,90,120,150,180].map(t=>`<option value="${t}"${t===60?' selected':''}>+${t<60?t+' Sekunden':(t%60?Math.floor(t/60)+' Min. 30 s':t/60+' Minute'+(t>60?'n':''))}</option>`).join('')}</select></label></div>
-    <div class="row"><label>Schwierigkeit<select id="f-level"><option value="grund" selected>Grundlegend</option><option value="erw">Erweitert</option></select></label>
+    <label>Strafe pro Tipp<select id="f-pen"><option value="0">keine</option>${[1,2,3,4,5,6,7,8,9,10].map(m=>`<option value="${m*60}"${m===2?' selected':''}>+${m} Minute${m>1?'n':''}</option>`).join('')}</select></label>
+    <label>Strafe pro falscher Eingabe<select id="f-wpen">${[30,60,90,120,150,180].map(t=>`<option value="${t}"${t===30?' selected':''}>+${t<60?t+' Sekunden':(t%60?Math.floor(t/60)+' Min. 30 s':t/60+' Minute'+(t>60?'n':''))}</option>`).join('')}</select></label></div>
+    <div class="row"><label>Schwierigkeit<select id="f-level"><option value="grund">Grundlegend</option><option value="erw" selected>Erweitert</option></select></label>
     <label>Grafik<select id="f-q"><option value="high" selected>Hoch – mit Leuchteffekten</option><option value="low">Einfach – für ältere iPads</option></select></label></div>
     ${saved?`<button class="btn primary" id="resume">▶ Weiterspielen: ${esc(saved.team)}</button><button class="btn" id="go">🚀 Neues Spiel starten</button>`:'<button class="btn primary" id="go">🚀 Sternwarte betreten</button>'}</div></div>
   <div class="card"><b>Steuerung</b><div class="ctl" style="margin-top:8px">
@@ -1033,7 +1047,7 @@ function startScreen(){
   $('#go').onclick=()=>{if(!saved)return go();uiOpen=true;$('#start').style.display='none';openPanel('Neues Spiel starten?',`<p>Auf diesem Gerät gibt es einen Spielstand von <b>${esc(saved.team)}</b>. Er wird gelöscht.</p>`,[{label:'Abbrechen',fn:()=>{uiOpen=true;$('#start').style.display='flex'}},{label:'Neues Spiel',cls:'danger',fn:go}]);$('#ov [data-close]').onclick=()=>{closePanel();uiOpen=true;$('#start').style.display='flex'}};
   const r=$('#resume');if(r)r.onclick=()=>{ac();setPuzzle(genPuzzle(saved.seed,saved.level||'grund'));S=saved;enter(false)}}
 function enter(intro){
-  $('#start').style.display='none';setupQuality(S.quality!=='low');if(innerHeight>innerWidth)pitch=-.1;applyState();renderHUD();uiOpen=false;
+  $('#start').style.display='none';setupQuality(S.quality!=='low');if(VH()>VW())pitch=-.1;applyState();renderHUD();uiOpen=false;
   const help=$('#help');help.innerHTML=isTouch?'Links ziehen = gehen · rechts ziehen = schauen · antippen = untersuchen':'WASD = gehen · Maus ziehen = schauen · Klick = untersuchen';help.style.display='block';setTimeout(()=>help.style.display='none',20000);
   if(intro)showNote('letter');
   if(S.end)setTimeout(finishUI,300)}
