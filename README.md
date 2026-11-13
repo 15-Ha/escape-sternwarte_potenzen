@@ -1,5 +1,7 @@
 # Escape 3D: Die Sternwarte von Dr. Hoch
 
+<img src="quelle/logo_fn.png" alt="Logo" height="48">
+
 3D-Escape-Room für die 1. Oberstufe (Sek, Zyklus 3) zu Potenzen: schreiben, lesen und berechnen, Zählprinzip und Baumdiagramm, Quadrat- und Kubikzahlen, Zehnerpotenzen und Stellenwerttafel, Rechenreihenfolge.
 
 - Online spielen: https://15-ha.github.io/escape-sternwarte_potenzen/
@@ -7,6 +9,7 @@
 - Jedes neue Spiel erzeugt neue Rätselzahlen und einen eigenen 6-stelligen Türcode.
 - Alle Rätsel sind im Kopf lösbar.
 - Zwei Schwierigkeitsgrade: **Grundlegend** (reine Potenzen) und **Erweitert** (zusätzlich a⁰, 1ⁿ, 0ⁿ, Klammern, Punkt vor Strich, Produkt statt Potenz).
+- Für das iPad ausgelegt: grosse Tippflächen, eigenes Tastenfeld statt Bildschirmtastatur, bereits gefundene Hinweise erscheinen direkt in der passenden Station.
 - Spielzeit 30–80 Minuten (Standard 40), Strafzeiten für Tipps und Fehleingaben einstellbar.
 - Lehrpersonen-Bereich (🎓) mit PIN – Lösungsweg für das Spiel auf dem jeweiligen Gerät.
 
