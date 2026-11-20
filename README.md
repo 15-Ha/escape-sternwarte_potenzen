@@ -12,6 +12,7 @@
 - Für das iPad ausgelegt: grosse Tippflächen, eigenes Tastenfeld statt Bildschirmtastatur, bereits gefundene Hinweise erscheinen direkt in der passenden Station.
 - Spielzeit 30–80 Minuten (Standard 40), Strafzeiten für Tipps und Fehleingaben einstellbar.
 - Lehrpersonen-Bereich (🎓) mit PIN – Lösungsweg für das Spiel auf dem jeweiligen Gerät.
+- Auch als LearningView-Aufgabe nutzbar (Anbieter «generiert»): `index.html` erkennt den Modus (Schüler/in, Klasse, Rückblick, Vorschau) automatisch und speichert das Ergebnis (Team, gelöste Rätsel, Zeit, Tipps, Fehlversuche) über die Embed-API; in der Klassenansicht sehen Lehrpersonen eine Übersichtstabelle. Ausserhalb von LearningView läuft die Datei unverändert als eigenständige Seite.
 
 ## Dateien
 - `index.html` – spielbereite Version (Three.js eingebettet)
